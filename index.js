@@ -3,7 +3,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const { MongoClient, ObjectID } = require('mongodb');
 const app = express()
-const port = process.env.PORT || 8080
+const port = process.env.PORT || 5000
 
 require('dotenv').config()
 
@@ -20,7 +20,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
   console.log(err)
   const productcollection = client.db("sajow").collection("production");
-  // const orderCollection = client.db("sajow").collection("Allorders");
+  const orderCollection = client.db("sajow").collection("Allorders");
 
   
 
@@ -45,30 +45,37 @@ client.connect(err => {
     })
   })
 
-  app.post('/addProduct', (req, res) =>{
+  app.post('/addProduct', (req, res) => {
     const newProduct = req.body;
     console.log('addeing product', newProduct)
-    
-    productcollection.insertOne(newProduct)
-    .then(result => {
-      console.log('insert count', result.insertedCount)
-      res.send(result.insertedCount >0)
-    })
 
-    app.post('/myorder', (req, res) => {
-      console.log(req)
-    })
-    
-  //   app.post('/orders', (req, res) =>{
-  //     const newOrder = req.body;
-  //     console.log('order-added', newOrder)
-      
-  //     })
-    
+    productcollection.insertOne(newProduct)
+      .then(result => {
+        console.log('insert count', result.insertedCount)
+        res.send(result.insertedCount > 0)
+      })
   })
 
-  
-  // client.close();
+  app.post('/order', (req, res) => {
+    
+    const newOrder = req.body
+    console.log('order Recieved', newOrder)
+    orderCollection.insertOne(newOrder)
+    .then(result => {
+     console.log('insert Count', result.insertedCount)
+     res.send(result.insertedCount > 0)
+    
+    })
+  })
+
+app.get('/myorders',(req,res) => {
+  console.log(req.query.email)
+  orderCollection.find({email: req.query.email})
+  .toArray((err, order) =>{
+    res.send(order);
+  })
+})
+
 
 });
 
